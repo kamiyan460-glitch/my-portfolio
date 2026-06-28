@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web制作 | LP＋Webシステム構築</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans JP', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Noto Sans JP', 'Inter', sans-serif; }
+
+    /* Gradient text */
+    .gradient-text {
+      background: linear-gradient(135deg, #818cf8, #c4b5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Hero ambient glow */
+    .hero-bg {
+      background-color: #0f172a;
+      background-image:
+        radial-gradient(ellipse at 15% 55%, rgba(99, 102, 241, 0.18) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 20%, rgba(167, 139, 250, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 90%, rgba(79, 70, 229, 0.08) 0%, transparent 50%);
+    }
+
+    /* Scroll fade-up */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Nav underline hover */
+    .nav-link {
+      position: relative;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: #818cf8;
+      transition: width 0.3s ease;
+    }
+    .nav-link:hover::after { width: 100%; }
+
+    /* Work / plan card lift */
+    .lift {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .lift:hover { transform: translateY(-6px); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+    /* ---- Form styles ---- */
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 6px;
+    }
+    .req {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 6px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #f87171;
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.25);
+      padding: 1px 6px;
+      border-radius: 9999px;
+      letter-spacing: 0.05em;
+    }
+    .form-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.875rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input::placeholder { color: rgba(255,255,255,0.2); }
+    .form-input:focus {
+      border-color: rgba(99,102,241,0.6);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+    }
+    .form-input.is-error {
+      border-color: rgba(248,113,113,0.5);
+      box-shadow: 0 0 0 3px rgba(248,113,113,0.08);
+    }
+    .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='rgba(255,255,255,0.3)' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px; padding-right: 36px; cursor: pointer; }
+    .form-select option { background: #1e293b; color: #fff; }
+    .err-msg {
+      margin-top: 5px;
+      font-size: 0.72rem;
+      color: #f87171;
+    }
+
+    /* Radio button custom style */
+    .radio-label { cursor: pointer; }
+    .radio-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.55);
+      background: rgba(15,23,42,0.5);
+      transition: all 0.2s;
+    }
+    .radio-label input:checked + .radio-btn {
+      border-color: rgba(99,102,241,0.6);
+      background: rgba(99,102,241,0.15);
+      color: #a5b4fc;
+      font-weight: 600;
+    }
+    .radio-btn::before {
+      content: '';
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .radio-label input:checked + .radio-btn::before {
+      border-color: #818cf8;
+      background: #818cf8;
+    }
+    #publicityGroup.group-error .radio-btn {
+      border-color: rgba(248,113,113,0.4);
+    }
+  </style>
+</head>
+<body class="bg-[#0f172a] text-white antialiased">
+
+  <!-- ========== NAV ========== -->
+  <nav id="mainNav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+    <div class="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2">
+        <span class="text-lg font-black tracking-tight gradient-text">Kamiya</span>
+        <!-- <span class="text-white/40 text-xs font-light hidden sm:block">Web制作</span> -->
+      </a>
+
+      <!-- Desktop links -->
+      <ul class="hidden md:flex items-center gap-8 text-sm text-white/60">
+        <li><a href="#services" class="nav-link hover:text-white transition-colors">できること</a></li>
+        <li><a href="#works"    class="nav-link hover:text-white transition-colors">制作実績</a></li>
+        <li><a href="#pricing"  class="nav-link hover:text-white transition-colors">料金</a></li>
+        <li><a href="#flow"     class="nav-link hover:text-white transition-colors">制作の流れ</a></li>
+        <li>
+          <a href="#contact" class="bg-indigo-500 hover:bg-indigo-400 text-white px-5 py-2 rounded-full text-sm font-semibold transition-colors">
+            お問い合わせ
+          </a>
+        </li>
+      </ul>
+
+      <!-- Mobile menu button -->
+      <button id="menuBtn" class="md:hidden p-2 text-white/60 hover:text-white transition-colors" aria-label="メニュー">
+        <svg id="menuIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <svg id="closeIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="hidden md:hidden bg-[#1e293b]/95 backdrop-blur border-t border-white/5">
+      <ul class="flex flex-col px-6 py-5 gap-5 text-sm text-white/70">
+        <li><a href="#services" class="block hover:text-white transition-colors">できること</a></li>
+        <li><a href="#works"    class="block hover:text-white transition-colors">制作実績</a></li>
+        <li><a href="#pricing"  class="block hover:text-white transition-colors">料金</a></li>
+        <li><a href="#flow"     class="block hover:text-white transition-colors">制作の流れ</a></li>
+        <li><a href="#contact"  class="block text-indigo-400 font-semibold">お問い合わせ →</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero-bg min-h-screen flex items-center pt-16">
+    <div class="max-w-6xl mx-auto px-6 py-24 lg:py-32">
+      <div class="max-w-3xl">
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/25 rounded-full px-4 py-1.5 text-indigo-300 text-xs font-medium mb-8 tracking-wide">
+          <span class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse"></span>
+          フリーランス Web制作エンジニア
+        </div>
+
+        <!-- Headline -->
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.1] tracking-tight mb-7">
+          集客できるLP<br>
+          <span class="gradient-text">業務を効率化するシステム</span><br>
+          まとめて作ります
+        </h1>
+
+        <p class="text-white/55 text-base sm:text-lg leading-relaxed mb-10 max-w-xl">
+          美容院・整体院・飲食店など店舗向けに、<strong class="text-white/80 font-semibold">デザイン性の高いLP</strong>と
+          <strong class="text-white/80 font-semibold">予約システム・料金シミュレーター</strong>を
+          ワンストップで制作。集客から業務効率化まで、Webで解決します。
+        </p>
+
+        <!-- CTAs -->
+        <div class="flex flex-wrap gap-4">
+          <a href="#contact" class="bg-indigo-500 hover:bg-indigo-400 text-white px-8 py-4 rounded-full font-bold text-base transition-all hover:shadow-xl hover:shadow-indigo-500/20 hover:-translate-y-0.5">
+            無料で相談する
+          </a>
+          <a href="#works" class="border border-white/20 hover:border-white/40 text-white/75 hover:text-white px-8 py-4 rounded-full font-medium text-base transition-all">
+            制作実績を見る
+          </a>
+        </div>
+
+        <!-- Stats -->
+        <div class="flex flex-wrap gap-10 mt-16 pt-10 border-t border-white/10">
+          <div>
+            <div class="text-3xl font-black gradient-text">3+</div>
+            <div class="text-white/40 text-xs mt-1 tracking-wide">制作実績</div>
+          </div>
+          <div>
+            <div class="text-3xl font-black gradient-text">3日〜</div>
+            <div class="text-white/40 text-xs mt-1 tracking-wide">最短納期</div>
+          </div>
+          <div>
+            <div class="text-3xl font-black gradient-text">100%</div>
+            <div class="text-white/40 text-xs mt-1 tracking-wide">レスポンシブ対応</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SERVICES ========== -->
+  <section id="services" class="py-24 bg-[#080d1a]">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-14 fade-up">
+        <span class="text-indigo-400 text-xs font-semibold tracking-[0.2em] uppercase">Services</span>
+        <h2 class="text-3xl md:text-4xl font-black mt-3 mb-3">できること</h2>
+        <p class="text-white/45 text-sm">LP制作から業務システムまで、Web領域をワンストップで対応</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+        <!-- LP制作 -->
+        <div class="fade-up group bg-[#1a2540] rounded-2xl p-6 border border-white/5 hover:border-indigo-500/30 transition-all duration-300 cursor-default">
+          <div class="w-11 h-11 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-5 group-hover:bg-indigo-500/20 transition-colors duration-300">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-base mb-2">LP制作</h3>
+          <p class="text-white/45 text-sm leading-relaxed mb-4">業種特化のコンバージョン重視LPをゼロから設計・制作します。</p>
+          <ul class="space-y-1.5 text-xs text-white/35">
+            <li class="flex items-center gap-1.5"><span class="text-indigo-400 font-bold">✓</span> レスポンシブ対応</li>
+            <li class="flex items-center gap-1.5"><span class="text-indigo-400 font-bold">✓</span> スクロールアニメーション</li>
+            <li class="flex items-center gap-1.5"><span class="text-indigo-400 font-bold">✓</span> SEO基礎設定込み</li>
+          </ul>
+        </div>
+
+        <!-- 予約システム -->
+        <div class="fade-up group bg-[#1a2540] rounded-2xl p-6 border border-white/5 hover:border-violet-500/30 transition-all duration-300 cursor-default" style="transition-delay:0.08s">
+          <div class="w-11 h-11 bg-violet-500/10 rounded-xl flex items-center justify-center mb-5 group-hover:bg-violet-500/20 transition-colors duration-300">
+            <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-base mb-2">予約システム構築</h3>
+          <p class="text-white/45 text-sm leading-relaxed mb-4">LPに組み込んだリアルタイム予約フォームやカレンダー機能を実装します。</p>
+          <ul class="space-y-1.5 text-xs text-white/35">
+            <li class="flex items-center gap-1.5"><span class="text-violet-400 font-bold">✓</span> カレンダー連携</li>
+            <li class="flex items-center gap-1.5"><span class="text-violet-400 font-bold">✓</span> メール自動送信</li>
+            <li class="flex items-center gap-1.5"><span class="text-violet-400 font-bold">✓</span> 管理機能付き</li>
+          </ul>
+        </div>
+
+        <!-- 料金シミュレーター -->
+        <div class="fade-up group bg-[#1a2540] rounded-2xl p-6 border border-white/5 hover:border-pink-500/30 transition-all duration-300 cursor-default" style="transition-delay:0.16s">
+          <div class="w-11 h-11 bg-pink-500/10 rounded-xl flex items-center justify-center mb-5 group-hover:bg-pink-500/20 transition-colors duration-300">
+            <svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-base mb-2">料金シミュレーター</h3>
+          <p class="text-white/45 text-sm leading-relaxed mb-4">メニュー選択でリアルタイムに金額が変わるインタラクティブな見積もり機能。</p>
+          <ul class="space-y-1.5 text-xs text-white/35">
+            <li class="flex items-center gap-1.5"><span class="text-pink-400 font-bold">✓</span> チェックボックス選択式</li>
+            <li class="flex items-center gap-1.5"><span class="text-pink-400 font-bold">✓</span> リアルタイム計算</li>
+            <li class="flex items-center gap-1.5"><span class="text-pink-400 font-bold">✓</span> そのまま問い合わせ</li>
+          </ul>
+        </div>
+
+        <!-- フォーム構築 -->
+        <div class="fade-up group bg-[#1a2540] rounded-2xl p-6 border border-white/5 hover:border-teal-500/30 transition-all duration-300 cursor-default" style="transition-delay:0.24s">
+          <div class="w-11 h-11 bg-teal-500/10 rounded-xl flex items-center justify-center mb-5 group-hover:bg-teal-500/20 transition-colors duration-300">
+            <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-base mb-2">フォーム構築</h3>
+          <p class="text-white/45 text-sm leading-relaxed mb-4">問い合わせ・申込み・アンケート、バリデーション付きフォームをLPに組み込みます。</p>
+          <ul class="space-y-1.5 text-xs text-white/35">
+            <li class="flex items-center gap-1.5"><span class="text-teal-400 font-bold">✓</span> 入力バリデーション</li>
+            <li class="flex items-center gap-1.5"><span class="text-teal-400 font-bold">✓</span> 自動返信メール</li>
+            <li class="flex items-center gap-1.5"><span class="text-teal-400 font-bold">✓</span> スパム対策</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== WORKS ========== -->
+  <section id="works" class="py-24 bg-[#0f172a]">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-14 fade-up">
+        <span class="text-indigo-400 text-xs font-semibold tracking-[0.2em] uppercase">Works</span>
+        <h2 class="text-3xl md:text-4xl font-black mt-3 mb-3">制作実績</h2>
+        <p class="text-white/45 text-sm">クライアント様の課題を解決したWebサイト</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+
+        <!-- Work 1: 美容院 -->
+        <div class="lift fade-up bg-[#1a2540] rounded-2xl overflow-hidden border border-white/5 hover:border-indigo-500/20">
+          <div class="aspect-[4/3] relative overflow-hidden bg-[#0f172a]">
+            <img
+              src="https://image.thum.io/get/width/1200/crop/900/https://my-portfolio-hair-bkrj.vercel.app"
+              alt="Hair Salon BLOOM ヒーロー画像"
+              class="absolute inset-0 w-full h-full object-cover object-top"
+              loading="lazy"
+            >
+            <span class="absolute bottom-3 left-3 inline-flex items-center gap-1.5 bg-rose-500/85 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-semibold">
+              予約システム付き
+            </span>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-base mb-2">美容院向けLP｜Hair Salon BLOOM</h3>
+            <p class="text-white/45 text-sm leading-relaxed mb-4">渋谷の髪質改善プライベートサロン向けLP。完全予約制・オンライン予約・メニュー料金表を組み込んだランディングページ</p>
+            <a href="https://my-portfolio-hair-bkrj.vercel.app" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 text-sm font-semibold transition-colors group">
+              サイトを見る
+              <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Work 2: 接骨院 -->
+        <div class="lift fade-up bg-[#1a2540] rounded-2xl overflow-hidden border border-white/5 hover:border-indigo-500/20" style="transition-delay:0.1s">
+          <div class="aspect-[4/3] relative overflow-hidden bg-[#0f172a]">
+            <img
+              src="https://image.thum.io/get/width/1200/crop/900/https://kamiyan-portfolio.vercel.app"
+              alt="さくら接骨院 ヒーロー画像"
+              class="absolute inset-0 w-full h-full object-cover object-top"
+              loading="lazy"
+            >
+            <span class="absolute bottom-3 left-3 inline-flex items-center gap-1.5 bg-teal-500/85 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-semibold">
+              料金シミュレーター付き
+            </span>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-base mb-2">接骨院向けLP｜さくら接骨院</h3>
+            <p class="text-white/45 text-sm leading-relaxed mb-4">交通事故・むちうち専門の接骨院向けLP。症状・保険種別・通院頻度から自己負担額をリアルタイムで算出する料金シミュレーター付き</p>
+            <a href="https://kamiyan-portfolio.vercel.app" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 text-sm font-semibold transition-colors group">
+              サイトを見る
+              <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Work 3: 飲食店 -->
+        <div class="lift fade-up bg-[#1a2540] rounded-2xl overflow-hidden border border-white/5 hover:border-indigo-500/20" style="transition-delay:0.2s">
+          <div class="aspect-[4/3] relative overflow-hidden bg-[#0f172a]">
+            <img
+              src="https://image.thum.io/get/width/1200/crop/900/https://my-portfolio-food.vercel.app"
+              alt="炭火焼肉 和牛亭 ヒーロー画像"
+              class="absolute inset-0 w-full h-full object-cover object-top"
+              loading="lazy"
+            >
+            <span class="absolute bottom-3 left-3 inline-flex items-center gap-1.5 bg-amber-600/90 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-semibold">
+              予約システム付き
+            </span>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-base mb-2">飲食店向けLP｜炭火焼肉 和牛亭</h3>
+            <p class="text-white/45 text-sm leading-relaxed mb-4">A5黒毛和牛の高級焼肉店向けLP。コース選択・完全個室のオンライン予約フォームを制作。フォーム送信後は自動でメールが届く仕組み付き</p>
+            <a href="https://my-portfolio-food.vercel.app" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 text-sm font-semibold transition-colors group">
+              サイトを見る
+              <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PRICING ========== -->
+  <section id="pricing" class="py-24 bg-[#080d1a]">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-14 fade-up">
+        <span class="text-indigo-400 text-xs font-semibold tracking-[0.2em] uppercase">Pricing</span>
+        <h2 class="text-3xl md:text-4xl font-black mt-3 mb-3">料金目安</h2>
+        <p class="text-white/45 text-sm">用途・規模・機能に応じてお選びください。詳細はご相談ください。</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+
+        <!-- Plan 1: LP＋機能セット -->
+        <div class="lift fade-up bg-[#1a2540] rounded-2xl p-8 border border-white/8">
+          <div class="text-white/40 text-xs font-semibold tracking-widest uppercase mb-3">LP＋機能セット</div>
+          <div class="flex items-end gap-1 mb-1">
+            <span class="text-4xl font-black">¥29,800</span>
+            <span class="text-white/40 text-base mb-1">〜</span>
+          </div>
+          <div class="text-white/35 text-xs mb-7">デザイン・コーディング・機能実装込み</div>
+          <div class="h-px bg-white/8 mb-6"></div>
+          <ul class="space-y-3 text-sm text-white/65 mb-8">
+            <li class="flex items-center gap-2.5"><span class="text-indigo-400">✓</span> レスポンシブLP（1ページ）</li>
+            <li class="flex items-center gap-2.5"><span class="text-indigo-400">✓</span> スクロールアニメーション</li>
+            <li class="flex items-center gap-2.5"><span class="text-indigo-400">✓</span> 予約システム or シミュレーター</li>
+            <li class="flex items-center gap-2.5"><span class="text-indigo-400">✓</span> お問い合わせフォーム</li>
+            <li class="flex items-center gap-2.5"><span class="text-indigo-400">✓</span> SEO基本設定</li>
+          </ul>
+          <a href="#contact" class="block text-center border border-indigo-500/40 hover:border-indigo-400 text-indigo-400 hover:text-indigo-300 rounded-full py-3 text-sm font-semibold transition-all">
+            相談する
+          </a>
+        </div>
+
+        <!-- Plan 2: コーディング対応 -->
+        <div class="lift fade-up bg-[#1a2540] rounded-2xl p-8 border border-white/8" style="transition-delay:0.1s">
+          <div class="text-white/40 text-xs font-semibold tracking-widest uppercase mb-3">コーディング対応</div>
+          <div class="flex items-end gap-1 mb-1">
+            <span class="text-4xl font-black">¥19,800</span>
+            <span class="text-white/40 text-base mb-1">〜</span>
+          </div>
+          <div class="text-white/35 text-xs mb-7">デザイン支給からのコーディング</div>
+          <div class="h-px bg-white/8 mb-6"></div>
+          <ul class="space-y-3 text-sm text-white/65 mb-8">
+            <li class="flex items-center gap-2.5"><span class="text-indigo-400">✓</span> Figma / XD 等のデザイン対応</li>
+            <li class="flex items-center gap-2.5"><span class="text-indigo-400">✓</span> HTML / CSS / JavaScript実装</li>
+            <li class="flex items-center gap-2.5"><span class="text-indigo-400">✓</span> レスポンシブ対応</li>
+            <li class="flex items-center gap-2.5"><span class="text-indigo-400">✓</span> アニメーション実装</li>
+            <li class="flex items-center gap-2.5"><span class="text-indigo-400">✓</span> 修正対応込み</li>
+          </ul>
+          <a href="#contact" class="block text-center border border-indigo-500/40 hover:border-indigo-400 text-indigo-400 hover:text-indigo-300 rounded-full py-3 text-sm font-semibold transition-all">
+            相談する
+          </a>
+        </div>
+
+      </div>
+
+      <p class="text-center text-white/25 text-xs mt-8">※ 表示価格はあくまで目安です。要件・規模によって異なります。まずはお気軽にご相談ください。</p>
+    </div>
+  </section>
+
+  <!-- ========== FLOW ========== -->
+  <section id="flow" class="py-24 bg-[#0f172a]">
+    <div class="max-w-2xl mx-auto px-6">
+      <div class="text-center mb-14 fade-up">
+        <span class="text-indigo-400 text-xs font-semibold tracking-[0.2em] uppercase">Flow</span>
+        <h2 class="text-3xl md:text-4xl font-black mt-3 mb-3">制作の流れ</h2>
+        <p class="text-white/45 text-sm">お問い合わせから納品まで、5ステップでスムーズに進めます</p>
+      </div>
+
+      <div class="space-y-0">
+
+        <!-- Step 1 -->
+        <div class="fade-up flex gap-5">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-[#1a2540] border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold text-xs flex-shrink-0">01</div>
+            <div class="w-px flex-1 min-h-[44px] bg-gradient-to-b from-indigo-500/30 to-transparent mt-2"></div>
+          </div>
+          <div class="pb-8 pt-1.5">
+            <h3 class="font-bold text-base mb-1.5">
+              ヒアリング・ご相談
+              <span class="ml-2 text-xs font-normal text-white/30 bg-white/5 px-2 py-0.5 rounded-full">無料</span>
+            </h3>
+            <p class="text-white/45 text-sm leading-relaxed">事業内容・ターゲット・必要な機能・ご予算をお聞かせください。メールまたはビデオ通話で対応します。</p>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="fade-up flex gap-5" style="transition-delay:0.05s">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-[#1a2540] border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold text-xs flex-shrink-0">02</div>
+            <div class="w-px flex-1 min-h-[44px] bg-gradient-to-b from-indigo-500/30 to-transparent mt-2"></div>
+          </div>
+          <div class="pb-8 pt-1.5">
+            <h3 class="font-bold text-base mb-1.5">お見積もり・ご契約</h3>
+            <p class="text-white/45 text-sm leading-relaxed">ヒアリング内容をもとに詳細なお見積もりをご提示。納期・仕様に合意後、ご契約となります。</p>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="fade-up flex gap-5" style="transition-delay:0.1s">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-[#1a2540] border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold text-xs flex-shrink-0">03</div>
+            <div class="w-px flex-1 min-h-[44px] bg-gradient-to-b from-indigo-500/30 to-transparent mt-2"></div>
+          </div>
+          <div class="pb-8 pt-1.5">
+            <h3 class="font-bold text-base mb-1.5">デザイン・コーディング</h3>
+            <p class="text-white/45 text-sm leading-relaxed">デザインカンプ確認後、コーディングを開始。進捗は随時共有しながら丁寧に進めます。</p>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="fade-up flex gap-5" style="transition-delay:0.15s">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-[#1a2540] border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold text-xs flex-shrink-0">04</div>
+            <div class="w-px flex-1 min-h-[44px] bg-gradient-to-b from-indigo-500/30 to-transparent mt-2"></div>
+          </div>
+          <div class="pb-8 pt-1.5">
+            <h3 class="font-bold text-base mb-1.5">確認・修正対応</h3>
+            <p class="text-white/45 text-sm leading-relaxed">テスト環境で動作確認いただき、修正点をフィードバック。プランに応じた修正対応を行います。</p>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="fade-up flex gap-5" style="transition-delay:0.2s">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 rounded-full bg-green-500/15 border border-green-500/40 flex items-center justify-center text-green-400 font-bold text-sm flex-shrink-0">✓</div>
+          </div>
+          <div class="pt-1.5">
+            <h3 class="font-bold text-base mb-1.5 text-green-400">納品・公開サポート</h3>
+            <p class="text-white/45 text-sm leading-relaxed">本番環境へのデプロイ・サーバー設定をサポート。公開後の動作確認まで責任をもって対応します。</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CONTACT ========== -->
+  <section id="contact" class="py-24 bg-[#080d1a]">
+    <div class="max-w-3xl mx-auto px-6">
+
+      <!-- Header -->
+      <div class="text-center mb-12 fade-up">
+        <span class="text-indigo-400 text-xs font-semibold tracking-[0.2em] uppercase">Contact</span>
+        <h2 class="text-3xl md:text-4xl font-black mt-3 mb-4">お問い合わせ</h2>
+        <p class="text-white/45 text-sm leading-relaxed">
+          「こんなサイトが作りたい」「予算はこれくらいだけど可能？」など、<br class="hidden sm:block">
+          まずはお気軽にご相談ください。通常24時間以内に返信します。
+        </p>
+      </div>
+
+      <!-- Quick links -->
+      <div class="fade-up grid sm:grid-cols-2 gap-4 mb-10">
+
+        <!-- Email -->
+        <a href="mailto:kamiyan460@gmail.com" class="group bg-[#1a2540] hover:bg-[#1e2d4d] border border-white/5 hover:border-indigo-500/30 rounded-2xl p-5 text-left transition-all duration-300 flex items-center gap-4">
+          <div class="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-500/20 transition-colors">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-semibold text-sm">メールで相談</div>
+            <div class="text-white/35 text-xs">kamiyan460@gmail.com</div>
+          </div>
+          <svg class="w-4 h-4 text-indigo-400 ml-auto group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </a>
+
+        <!-- Coconala -->
+        <a href="https://coconala.com/users/6162874" target="_blank" rel="noopener noreferrer" class="group bg-[#1a2540] hover:bg-[#1e2d4d] border border-white/5 hover:border-green-500/30 rounded-2xl p-5 text-left transition-all duration-300 flex items-center gap-4">
+          <div class="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
+            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-semibold text-sm">ココナラで依頼</div>
+            <div class="text-white/35 text-xs">エスクロー決済で安心・安全</div>
+          </div>
+          <svg class="w-4 h-4 text-green-400 ml-auto group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </a>
+
+      </div>
+
+      <!-- Divider -->
+      <div class="fade-up flex items-center gap-4 mb-10">
+        <div class="flex-1 h-px bg-white/8"></div>
+        <span class="text-white/25 text-xs tracking-widest">または、フォームでご連絡</span>
+        <div class="flex-1 h-px bg-white/8"></div>
+      </div>
+
+      <!-- ===== FORMSPREE FORM ===== -->
+      <div class="fade-up">
+
+        <!-- Thank-you state (hidden by default) -->
+        <div id="formThanks" class="hidden text-center py-16">
+          <div class="w-16 h-16 bg-green-500/15 border border-green-500/30 rounded-full flex items-center justify-center mx-auto mb-5">
+            <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-2">送信が完了しました！</h3>
+          <p class="text-white/45 text-sm leading-relaxed">お問い合わせありがとうございます。<br>通常24時間以内にご連絡いたします。</p>
+        </div>
+
+        <!-- Form -->
+        <form id="contactForm" action="https://formspree.io/f/mgojynzj" method="POST" novalidate>
+
+          <div class="bg-[#1a2540] rounded-2xl border border-white/5 p-6 sm:p-8 space-y-5">
+
+            <!-- Row: お名前 / フリガナ -->
+            <div class="grid sm:grid-cols-2 gap-5">
+              <div class="field-wrap">
+                <label class="form-label">お名前 <span class="req">必須</span></label>
+                <input type="text" name="name" placeholder="山田 太郎" class="form-input" data-required>
+                <p class="err-msg hidden"></p>
+              </div>
+              <div class="field-wrap">
+                <label class="form-label">お名前（フリガナ） <span class="req">必須</span></label>
+                <input type="text" name="furigana" placeholder="ヤマダ タロウ" class="form-input" data-required>
+                <p class="err-msg hidden"></p>
+              </div>
+            </div>
+
+            <!-- 個人・会社・団体名 -->
+            <div class="field-wrap">
+              <label class="form-label">個人・会社・団体名 <span class="req">必須</span></label>
+              <input type="text" name="organization" placeholder="例）株式会社〇〇 / 個人" class="form-input" data-required>
+              <p class="err-msg hidden"></p>
+            </div>
+
+            <!-- メールアドレス -->
+            <div class="field-wrap">
+              <label class="form-label">メールアドレス <span class="req">必須</span></label>
+              <input type="email" name="email" placeholder="example@email.com" class="form-input" data-required data-email>
+              <p class="err-msg hidden"></p>
+            </div>
+
+            <!-- Row: ご予算 / ご希望納期 -->
+            <div class="grid sm:grid-cols-2 gap-5">
+              <div class="field-wrap">
+                <label class="form-label">ご予算 <span class="req">必須</span></label>
+                <select name="budget" class="form-input form-select" data-required>
+                  <option value="">選択してください</option>
+                  <option>〜¥30,000</option>
+                  <option>¥30,000〜¥60,000</option>
+                  <option>¥60,000〜¥100,000</option>
+                  <option>¥100,000〜¥200,000</option>
+                  <option>¥200,000以上</option>
+                  <option>未定・要相談</option>
+                </select>
+                <p class="err-msg hidden"></p>
+              </div>
+              <div class="field-wrap">
+                <label class="form-label">ご希望納期 <span class="req">必須</span></label>
+                <select name="deadline" class="form-input form-select" data-required>
+                  <option value="">選択してください</option>
+                  <option>1週間以内</option>
+                  <option>2週間〜1ヶ月</option>
+                  <option>1〜2ヶ月</option>
+                  <option>2ヶ月以上</option>
+                  <option>未定・要相談</option>
+                </select>
+                <p class="err-msg hidden"></p>
+              </div>
+            </div>
+
+            <!-- 実績公開可否 -->
+            <div class="field-wrap">
+              <label class="form-label">実績の公開可否 <span class="req">必須</span></label>
+              <div id="publicityGroup" class="flex gap-4 mt-1">
+                <label class="radio-label">
+                  <input type="radio" name="publicity" value="公開可能" class="sr-only" data-radio-group="publicity">
+                  <span class="radio-btn">公開可能</span>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="publicity" value="公開不可" class="sr-only" data-radio-group="publicity">
+                  <span class="radio-btn">公開不可</span>
+                </label>
+              </div>
+              <p class="err-msg hidden" id="publicityErr"></p>
+            </div>
+
+            <!-- お問い合わせ内容 -->
+            <div class="field-wrap">
+              <label class="form-label">お問い合わせ内容 <span class="req">必須</span></label>
+              <textarea name="message" rows="5" placeholder="ご希望のサイトの内容・機能・参考サイトなど、できるだけ詳しくご記入ください。" class="form-input resize-none" data-required></textarea>
+              <p class="err-msg hidden"></p>
+            </div>
+
+            <!-- Submit -->
+            <div class="pt-2">
+              <button type="submit" id="submitBtn" class="w-full bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-full transition-all hover:shadow-xl hover:shadow-indigo-500/20 flex items-center justify-center gap-2">
+                <span id="submitLabel">送信する</span>
+                <svg id="submitSpinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+              </button>
+              <p class="text-white/25 text-xs text-center mt-3">送信内容はFormspree経由で安全に処理されます</p>
+            </div>
+
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="py-8 bg-[#0f172a] border-t border-white/5">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="text-white/25 text-xs">© 2025 Kamiya Web制作</div>
+      <nav class="flex flex-wrap justify-center gap-6 text-xs text-white/30">
+        <a href="#services" class="hover:text-white/60 transition-colors">できること</a>
+        <a href="#works"    class="hover:text-white/60 transition-colors">制作実績</a>
+        <a href="#pricing"  class="hover:text-white/60 transition-colors">料金</a>
+        <a href="#flow"     class="hover:text-white/60 transition-colors">制作の流れ</a>
+        <a href="#contact"  class="hover:text-white/60 transition-colors">お問い合わせ</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- ========== JS ========== -->
+  <script>
+    // --- Mobile menu ---
+    const menuBtn    = document.getElementById('menuBtn');
+    const menuIcon   = document.getElementById('menuIcon');
+    const closeIcon  = document.getElementById('closeIcon');
+    const mobileMenu = document.getElementById('mobileMenu');
+    let menuOpen = false;
+
+    menuBtn.addEventListener('click', () => {
+      menuOpen = !menuOpen;
+      mobileMenu.classList.toggle('hidden', !menuOpen);
+      menuIcon.classList.toggle('hidden', menuOpen);
+      closeIcon.classList.toggle('hidden', !menuOpen);
+    });
+
+    mobileMenu.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        menuOpen = false;
+        mobileMenu.classList.add('hidden');
+        menuIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+      });
+    });
+
+    // --- Nav scroll glass effect ---
+    const mainNav = document.getElementById('mainNav');
+    const updateNav = () => {
+      if (window.scrollY > 60) {
+        mainNav.style.cssText = 'background:rgba(15,23,42,0.88);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.4)';
+      } else {
+        mainNav.style.cssText = '';
+      }
+    };
+    window.addEventListener('scroll', updateNav, { passive: true });
+
+    // --- Smooth scroll ---
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', e => {
+        const id = link.getAttribute('href');
+        if (id === '#') return;
+        const target = document.querySelector(id);
+        if (target) {
+          e.preventDefault();
+          const top = target.getBoundingClientRect().top + window.scrollY - 70;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      });
+    });
+
+    // --- Scroll-triggered fade-up (IntersectionObserver) ---
+    const fadeEls = document.querySelectorAll('.fade-up');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+    fadeEls.forEach(el => io.observe(el));
+
+    // --- Contact form: validation + Formspree submission ---
+    const contactForm   = document.getElementById('contactForm');
+    const formThanks    = document.getElementById('formThanks');
+    const submitBtn     = document.getElementById('submitBtn');
+    const submitLabel   = document.getElementById('submitLabel');
+    const submitSpinner = document.getElementById('submitSpinner');
+
+    function showError(input, msg) {
+      input.classList.add('is-error');
+      const err = input.closest('.field-wrap')?.querySelector('.err-msg');
+      if (err) { err.textContent = msg; err.classList.remove('hidden'); }
+    }
+
+    function clearError(input) {
+      input.classList.remove('is-error');
+      const err = input.closest('.field-wrap')?.querySelector('.err-msg');
+      if (err) { err.textContent = ''; err.classList.add('hidden'); }
+    }
+
+    // Clear errors on user interaction
+    contactForm.querySelectorAll('.form-input').forEach(el => {
+      el.addEventListener('input', () => clearError(el));
+      el.addEventListener('change', () => clearError(el));
+    });
+
+    function validateForm() {
+      let valid = true;
+
+      // Required text / select fields
+      contactForm.querySelectorAll('[data-required]').forEach(el => {
+        if (!el.value.trim()) {
+          showError(el, 'この項目は必須です');
+          valid = false;
+        } else {
+          clearError(el);
+        }
+        // Email format
+        if (el.dataset.email && el.value.trim()) {
+          const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRe.test(el.value.trim())) {
+            showError(el, '正しいメールアドレスを入力してください');
+            valid = false;
+          }
+        }
+      });
+
+      // Radio group: publicity
+      const checked = contactForm.querySelector('input[name="publicity"]:checked');
+      const publicityGroup = document.getElementById('publicityGroup');
+      const publicityErr   = document.getElementById('publicityErr');
+      if (!checked) {
+        publicityGroup.classList.add('group-error');
+        publicityErr.textContent = 'いずれかを選択してください';
+        publicityErr.classList.remove('hidden');
+        valid = false;
+      } else {
+        publicityGroup.classList.remove('group-error');
+        publicityErr.classList.add('hidden');
+      }
+
+      return valid;
+    }
+
+    // Clear radio error on selection
+    contactForm.querySelectorAll('input[name="publicity"]').forEach(r => {
+      r.addEventListener('change', () => {
+        document.getElementById('publicityGroup').classList.remove('group-error');
+        document.getElementById('publicityErr').classList.add('hidden');
+      });
+    });
+
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!validateForm()) return;
+
+      // Show loading state
+      submitBtn.disabled = true;
+      submitLabel.textContent = '送信中...';
+      submitSpinner.classList.remove('hidden');
+
+      try {
+        const res = await fetch(contactForm.action, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: new FormData(contactForm),
+        });
+
+        if (res.ok) {
+          contactForm.classList.add('hidden');
+          formThanks.classList.remove('hidden');
+        } else {
+          const data = await res.json().catch(() => ({}));
+          const msg = data.errors?.map(e => e.message).join(', ') || '送信に失敗しました。時間をおいて再度お試しください。';
+          alert(msg);
+          submitBtn.disabled = false;
+          submitLabel.textContent = '送信する';
+          submitSpinner.classList.add('hidden');
+        }
+      } catch {
+        alert('通信エラーが発生しました。インターネット接続を確認してください。');
+        submitBtn.disabled = false;
+        submitLabel.textContent = '送信する';
+        submitSpinner.classList.add('hidden');
+      }
+    });
+  </script>
+
+</body>
+</html>
